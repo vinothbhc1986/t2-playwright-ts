@@ -62,6 +62,5 @@ test.describe("Leave List Tests", () => {
     const toDateValue = await leavePage.toDateInput.inputValue();
     expect(fromDateValue).toBe("");
     expect(toDateValue).toBe("");
-    // Add assertions to check that dropdowns and checkbox are reset
   });
 });
