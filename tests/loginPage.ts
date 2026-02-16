@@ -30,6 +30,7 @@ export class LoginPage {
     }
 
     async getErrorMessageText() {
+        //
         return await this.errorMessage.innerText();
     }
 }
