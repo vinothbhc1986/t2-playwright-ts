@@ -21,7 +21,7 @@ test.describe("API Mocking Examples", () => {
 
     // Make request from within the browser page using fetch - this gets intercepted
     const pokemon = await page.evaluate(async () => {
-      const response = await fetch("https://pokeapi.co/api/v2/pokemon/ditto");
+      const response = await fetch("https://pokeapi.co/api/v2/pokemon/mock-pokemon");
       return await response.json();
     });
 
@@ -51,7 +51,7 @@ test.describe("API Mocking Examples", () => {
 
     // Make request from within the page using fetch
     const githubUser = await page.evaluate(async () => {
-      const response = await fetch("https://api.github.com/users/octocat");
+      const response = await fetch("https://api.github.com/users/mockoctocat");
       return await response.json();
     });
 
@@ -70,11 +70,12 @@ test.describe("API Mocking Examples", () => {
     // Try to make request from within the page - it will fail
     try {
       const response = await page.evaluate(async () => {
-        const response = await fetch("https://api.kanye.rest/");
+        const response = await fetch("https://api.kanye.restmock/");
         return await response.json();
       });
-      console.log("Request failed as expected");
+      
     } catch (error) {
+        console.log("Request failed as expected");
       expect(error).toBeDefined();
     }
   });
@@ -93,7 +94,7 @@ test.describe("API Mocking Examples", () => {
 
     // Make request from within the page
     const result = await page.evaluate(async () => {
-      const response = await fetch("https://randomuser.me/api/");
+      const response = await fetch("https://randomuser.me/api/mock");
       const data = await response.json();
       return {
         status: response.status,

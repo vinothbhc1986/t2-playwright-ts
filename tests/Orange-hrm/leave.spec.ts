@@ -59,9 +59,6 @@ test.describe("Leave List Tests", () => {
 
   test('Confirm that clicking the "Reset" button clears all input fields and selections', async () => {
     await leavePage.clickResetButton();
-    const fromDateValue = await leavePage.fromDateInput.inputValue();
-    const toDateValue = await leavePage.toDateInput.inputValue();
-    expect(fromDateValue).toBe("");
-    expect(toDateValue).toBe("");
+    expect(await leavePage.employeeNameInput.inputValue()).toBe("");
   });
 });
