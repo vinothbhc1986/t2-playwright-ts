@@ -1,87 +1,88 @@
-import { test, expect } from "@playwright/test";
+import test, { expect } from "@playwright/test";
 
-test.describe("API Mocking Examples", () => {
-  test("Mock Pokemon API with page.request (intercepted)", async ({ page }) => {
-    // Set up interception using page.route() 
-    await page.route("**/pokeapi.co/api/v2/pokemon/**", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          id: 999,
-          name: "mock-pokemon",
-          sprites: {
-            front_default: "https://example.com/mock-pokemon.png",
-          },
-          height: 10,
-          weight: 100,
-        }),
-      });
+test("mock pokemon api", async ({ page }) => {
+  await page.route("**/pokeapi.co/api/v2/pokemon/**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: 999,
+        name: "mock-pokemon",
+        sprites: {
+          front_default: "http://dummy/mock-pokemon.png",
+        },
+        height: 88,
+        weight: 100,
+      }),
     });
+  });
 
-    // Make request from within the browser page using fetch - this gets intercepted
-    const pokemon = await page.evaluate(async () => {
-      const response = await fetch("https://pokeapi.co/api/v2/pokemon/mock-pokemon");
-      return await response.json();
-    });
-
-    // Verify mocked data
-    expect(pokemon.name).toBe("mock-pokemon");
-    expect(pokemon.id).toBe(999);
-    expect(pokemon.sprites.front_default).toBe(
-      "https://example.com/mock-pokemon.png",
+  // make api request - this gets intercepted
+  const pokemon = await page.evaluate(async () => {
+    const response = await fetch(
+      "https://pokeapi.co/api/v2/pokemon/mock-pokemo",
     );
+    return await response.json();
   });
 
-  test("Mock GitHub User API response", async ({ page }) => {
-    // Set up route to intercept GitHub API calls using page.route()
-    await page.route("**/api.github.com/users/**", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          login: "mock-user",
-          id: 12345,
-          name: "Mock GitHub User",
-          public_repos: 50,
-          followers: 1000,
-        }),
-      });
-    });
+  // verify mocked data
 
-    // Make request from within the page using fetch
-    const githubUser = await page.evaluate(async () => {
-      const response = await fetch("https://api.github.com/users/mockoctocat");
+  expect(pokemon.id).toBe(999);
+  expect(pokemon.name).toBe("mock-pokemon");
+  expect(pokemon.sprites.front_default).toBe("http://dummy/mock-pokemon.png");
+  expect(pokemon.height).toBe(88);
+  expect(pokemon.weight).toBe(100);
+});
+
+test("should mock github user", async ({ page }) => {
+  // setup route to intercept github api calls using page.route()
+  await page.route("**/api.github.com/users/**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: 999,
+        name: "mock-github-user",
+        login: "mock-github-user",
+        avatar_url: "http://dummy/mock-github-user.png",
+      }),
+    });
+  });
+
+  const githubUser = await page.evaluate(async () => {
+    const response = await fetch(
+      "https://api.github.com/users/mock-github-user",
+    );
+    return await response.json();
+  });
+
+  expect(githubUser.id).toBe(999);
+  expect(githubUser.name).toBe("mock-github-user");
+  expect(githubUser.login).toBe("mock-github-user");
+  expect(githubUser.avatar_url).toBe("http://dummy/mock-github-user.png");
+});
+
+test("mock api with error response", async ({ page }) => {
+  // setup route to intercept github api calls using page.route()
+  await page.route("**/api.kanye.rest/**", async (route) => {
+    await route.abort("failed");
+  });
+
+  // try to make request - it will fail
+  try {
+    const quote = await page.evaluate(async () => {
+      const response = await fetch("https://api.kanye.restmock/");
       return await response.json();
     });
+  } catch (error) {
+    console.log("Request failed as expected");
+    expect(error).toBeDefined();
+  }
+});
 
-    // Verify mocked data was returned
-    expect(githubUser.login).toBe("mock-user");
-    expect(githubUser.id).toBe(12345);
-    expect(githubUser.name).toBe("Mock GitHub User");
-  });
 
-  test("Mock API with error response", async ({ page }) => {
-    // Mock an API to return an error using page.route()
-    await page.route("**/api.kanye.rest/**", async (route) => {
-      await route.abort("failed");
-    });
-
-    // Try to make request from within the page - it will fail
-    try {
-      const response = await page.evaluate(async () => {
-        const response = await fetch("https://api.kanye.restmock/");
-        return await response.json();
-      });
-      
-    } catch (error) {
-        console.log("Request failed as expected");
-      expect(error).toBeDefined();
-    }
-  });
-
-  test("Mock API with custom status code", async ({ page }) => {
-    // Mock an API to return 429 (Too Many Requests) using page.route()
+test('mock api rate limit', async ({ page }) => {
+    // mock an api to return 429 status code
     await page.route("**/randomuser.me/api/**", async (route) => {
       await route.fulfill({
         status: 429,
@@ -92,18 +93,16 @@ test.describe("API Mocking Examples", () => {
       });
     });
 
-    // Make request from within the page
-    const result = await page.evaluate(async () => {
-      const response = await fetch("https://randomuser.me/api/mock");
-      const data = await response.json();
-      return {
-        status: response.status,
-        data: data,
-      };
-    });
-
-    // Verify error status
+    // try to make request - it will fail
+      const result = await page.evaluate(async () => {
+        const response = await fetch("https://randomuser.me/api/mock");
+        const data = await response.json();
+        return {
+          status: response.status,
+          data,
+        }
+      });
+    
     expect(result.status).toBe(429);
     expect(result.data.error).toBe("Rate limit exceeded");
-  });
-});
+})
