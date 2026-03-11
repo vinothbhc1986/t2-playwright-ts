@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test';
+import { OrangeHRMConstants } from './constant';
 
 export class LoginPage {
     private page: Page;
@@ -24,7 +25,7 @@ export class LoginPage {
     }
 
     async navigate() {
-        await this.page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+        await this.page.goto(OrangeHRMConstants.loginUrl);
     }
 
     async enterUsername(username: string) {
